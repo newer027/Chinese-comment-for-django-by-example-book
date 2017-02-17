@@ -1,0 +1,56 @@
+{% extends "base.html" %} <!--extends的用法-->
+{% load thumbnail %} <!--load的用法-->
+
+{% block title %}{{ user.get_full_name }}{% endblock %} <!--设置title-->
+
+{% block content %}
+    <h1>{{ user.get_full_name }}</h1>
+    <div class="profile-info">
+    {% thumbnail user.profile.photo "180x180" crop="100%" as im %} <!--thumbnail的用法-->
+        <img src="{{ im.url }}" class="user-detail"> <!--src的用法-->
+    {% endthumbnail %}
+    </div>
+    {% with total_followers=user.followers.count %} <!--with的用法-->
+        <span class="count">
+            <span class="total">{{ total_followers }}</span>
+            follower{{ total_followers|pluralize }} <!--pluralize的用法-->
+        </span>
+        <a href="#" data-id="{{ user.id }}" data-action="{% if request.user in user.followers.all %}un{% endif %}follow" class="follow button">
+            {% if request.user not in user.followers.all %}
+                Follow
+            {% else %}
+                Unfollow
+            {% endif %}
+        </a> <!--follow/unfollow的功能,用到了ajax-->
+        <div id="image-list" class="image-container">
+            {% include "images/image/list_ajax.html" with images=user.images_created.all %} <!--include的用法-->
+        </div>
+    {% endwith %}
+{% endblock %}
+
+{% block domready %}
+    $('a.follow').click(function(e){ <!--点击按钮<a class="follow button">-->
+        e.preventDefault(); <!--阻止元素发生默认的行为-->
+        $.post('{% url "user_follow" %}',
+            {
+                id: $(this).data('id'),
+                action: $(this).data('action')
+            }, <!--request.POST方法,提供id,action-->
+            function(data){
+                if (data['status'] == 'ok')
+                {
+                    var previous_action = $('a.follow').data('action'); //得到action
+
+                    // 用? :判断,触发data-action
+                    $('a.follow').data('action', previous_action == 'follow' ? 'unfollow' : 'follow');
+                    // 用? :判断,触发link text
+                    $('a.follow').text(previous_action == 'follow' ? 'Unfollow' : 'Follow');
+
+                    // 更新followers总数,parseInt的用法
+                    var previous_followers = parseInt($('span.count .total').text());
+                    //更新span class="total"的文本
+                    $('span.count .total').text(previous_action == 'follow' ? previous_followers + 1 : previous_followers - 1);
+                }
+        });
+    });
+{% endblock %}

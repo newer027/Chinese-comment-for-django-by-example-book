@@ -1,0 +1,20 @@
+{% extends "blog/base.html" %}
+
+{% block title %}Share a post{% endblock %}
+
+{% block content %}
+    <!--已经发送-->
+    {% if sent %}
+        <h1>E-mail successfully sent</h1>
+        <p>"{{ post.title }}" was successfully sent by e-mail.</p>
+    {% else %}
+        <!--提交发送的表单-->
+        <h1>Share "{{ post.title }}" by e-mail</h1>
+        <form action="." method="post">
+            {{ form.as_p }}
+            <!--设置csrf-->
+            {% csrf_token %}
+            <input type="submit" value="Send e-mail">
+        </form>
+    {% endif %}
+{% endblock %}

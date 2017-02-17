@@ -1,0 +1,31 @@
+<!--extends的用法-->
+{% extends "blog/base.html" %}
+
+<!--title的用法-->
+{% block title %}Search{% endblock %}
+
+{% block content %}
+    <!--request.GET的用法-->
+    {% if "query" in request.GET %}
+        <!--cd的用法-->
+        <h1>Posts containing "{{ cd.query }}"</h1>
+        <!--pluralize的用法-->
+        <h3>Found {{ total_results }} result{{ total_results|pluralize }}</h3>
+        {% for result in results %}
+        	{% with post=result.object %}
+        		<h4><a href="{{ post.get_absolute_url }}">{{ post.title }}</a></h4>
+                {{ post.body|truncatewords:5 }}
+        	{% endwith %}
+        {% empty %}
+        	<p>There are no results for your query.</p>
+        {% endfor %}
+        <p><a href="{% url "blog:post_search" %}">Search again</a></p>
+    {% else %}
+        <h1>Search for posts</h1>
+        <!--request.method的用法-->
+        <form action="." method="get">
+            {{ form.as_p }}
+            <input type="submit" value="Search">
+        </form>
+    {% endif %}
+{% endblock %}

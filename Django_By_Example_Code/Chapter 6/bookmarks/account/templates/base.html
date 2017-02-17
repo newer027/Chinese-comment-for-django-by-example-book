@@ -1,0 +1,69 @@
+{% load staticfiles %}
+<!DOCTYPE html>
+<html>
+<head>
+    <!--使用utf-8字符集-->
+    <meta charset="utf-8" />
+    <title>{% block title %}{% endblock %}</title> <!--title用法-->
+    <link href="{% static "css/base.css" %}" rel="stylesheet"> <!--css用法-->
+</head>
+<body>
+    <div id="header">
+        <span class="logo">Bookmarks</span>
+        {% if request.user.is_authenticated %} <!--如果用户通过认证-->
+        <ul class="menu">
+            <!--section的用法-->
+            <li {% if section == "dashboard" %}class="selected"{% endif %}><a href="{% url "dashboard" %}">My dashboard</a></li>
+            <li {% if section == "images" %}class="selected"{% endif %}><a href="{% url "images:list" %}">Images</a></li>
+            <li {% if section == "people" %}class="selected"{% endif %}><a href="{% url "user_list" %}">People</a></li>
+        </ul>
+        {% endif %}
+
+        <span class="user">
+        {% if request.user.is_authenticated %} <!--如果用户通过认证-->
+            Hello {{ request.user.first_name }}, <a href="{% url "logout" %}">Logout</a>  <!--href的用法-->
+        {% else %}
+            <a href="{% url "login" %}">Log-in</a> <!--如果用户没有认证-->
+        {% endif %}
+        </span>
+    </div>
+
+    {% if messages %} <!--messages的用法-->
+        <ul class="messages">
+            {% for message in messages %}
+                <li class="{{ message.tags }}">
+                    {{ message|safe }} <!--safe的用法-->
+                    <a href="#" class="close">×</a>
+                </li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+
+    <div id="content">
+        {% block content %}
+        {% endblock %} <!--content的用法-->
+    </div>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+    <script src=" http://cdn.jsdelivr.net/jquery.cookie/1.4.1/jquery.cookie.min.js "></script> <!--jquery的用法-->
+    <script>
+        var csrftoken = $.cookie('csrftoken');
+        function csrfSafeMethod(method) {
+            // 这些HTTP方法不需要CSRF保护
+            return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+        }
+        $.ajaxSetup({
+            beforeSend: function(xhr, settings) {
+                if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+                    xhr.setRequestHeader("X-CSRFToken", csrftoken); <!--CSRF保护生效-->
+                }
+            }
+        });
+
+        $(document).ready(function(){
+            {% block domready %}
+            {% endblock %} <!--加载document后执行domready部分-->
+		});
+    </script>
+</body>
+</html>

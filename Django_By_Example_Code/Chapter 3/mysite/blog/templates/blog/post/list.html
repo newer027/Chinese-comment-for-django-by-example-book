@@ -1,0 +1,35 @@
+<!--extends的用法-->
+{% extends "blog/base.html" %}
+<!--blog_tags.py中的total_posts, show_latest_posts, get_most_commented_posts生效-->
+{% load blog_tags %}
+
+{% block title %}My Blog{% endblock %}
+
+{% block content %}
+    <h1>My Blog</h1>
+    <!--如果有tag,显示tag name-->
+    {% if tag %}
+        <h2>Posts tagged with "{{ tag.name }}"</h2>
+    {% endif %}
+    <!--每个post-->
+    {% for post in posts %}
+        <!--显示post.title,href是post的detail-->
+        <h2><a href="{{ post.get_absolute_url }}">{{ post.title }}</a></h2>
+        <p class="tags">
+            Tags:
+            <!--显示post.tags的tag name-->
+            {% for tag in post.tags.all %}
+                <a href="{% url "blog:post_list_by_tag" tag.slug %}">{{ tag.name }}</a>
+                <!--如果不是最后一个,添加逗号-->
+                {% if not forloop.last %}, {% endif %}
+            {% endfor %}
+        </p>
+        <!--时间和作者-->
+        <p class="date">Published {{ post.publish }} by {{ post.author }}</p>
+        <!--markdown显示正文,正文显示30个字符-->
+        {{ post.body|markdown|truncatewords_html:30 }}
+    {% endfor %}
+
+    <!--传递posts到page-->
+    {% include "pagination.html" with page=posts %}
+{% endblock %}

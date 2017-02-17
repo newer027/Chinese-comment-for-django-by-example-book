@@ -1,0 +1,48 @@
+<!--加载django.contrib.staticfiles(settings.py中的INSTALLED_APPS)提供的staticfiles-->
+{% load staticfiles %}
+<!--blog_tags.py中的total_posts, show_latest_posts, get_most_commented_posts生效-->
+{% load blog_tags %}
+<!--文件格式-->
+<!DOCTYPE html>
+<html>
+<head>
+    <!--title在不同的templates中分别定义-->
+    <title>{% block title %}{% endblock %}</title>
+    <!--引用css-->
+    <link href="{% static "css/blog.css" %}" rel="stylesheet">
+</head>
+<body>
+    <!--css给出了每个id的样式-->
+    <div id="content">
+        <!--extends包含base.html的文档中的content,block和endblock分别出现在base.html和在包含base.html的文档-->
+        {% block content %}
+        {% endblock %}
+    </div>
+    <!--css给出了每个id的样式-->
+    <div id="sidebar">
+        <!--标题-->
+        <h2>My blog</h2>
+        <!--blog_tags.py中给出的total_posts-->
+        <p>This is my blog. I've written {% total_posts %} posts so far.</p>
+        <!--href来自blog/urls.py中的post_feed-->
+        <p><a href="{% url "blog:post_feed" %}">Subscribe to my RSS feed</a></p>
+
+        <h3>Latest posts</h3>
+        <!--show_latest_posts来自blog_tags-->
+        {% show_latest_posts 3 %}
+
+        <h3>Most commented posts</h3>
+        <!--get_most_commented_posts来自blog_tags, as用来传递变量-->
+        {% get_most_commented_posts as most_commented_posts %}
+        <!--ul是列表-->
+        <ul>
+        <!--for,in...endfor用来遍历-->
+        {% for post in most_commented_posts %}
+            <!--get_absolute_url来自blog/models.py-->
+            <li><a href="{{ post.get_absolute_url }}">{{ post.title }}</a></li>
+        {% endfor %}
+        </ul>
+
+    </div>
+</body>
+</html>
